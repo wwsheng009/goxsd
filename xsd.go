@@ -83,13 +83,18 @@ func (s xsdSchema) ns() string {
 type xsdImport struct {
 	Location string `xml:"schemaLocation,attr"`
 }
-
+type xsdSequence struct {
+	Min      string       `xml:"minOccurs,attr"`
+	Max      string       `xml:"maxOccurs,attr"`
+	Elements []xsdElement `xml:"element"`
+}
 type xsdElement struct {
 	Name        string          `xml:"name,attr"`
 	Type        string          `xml:"type,attr"`
 	Default     string          `xml:"default,attr"`
 	Min         string          `xml:"minOccurs,attr"`
 	Max         string          `xml:"maxOccurs,attr"`
+	Ref         string          `xml:"ref,attr"`
 	Annotation  string          `xml:"annotation>documentation"`
 	ComplexType *xsdComplexType `xml:"complexType"` // inline complex type
 	SimpleType  *xsdSimpleType  `xml:"simpleType"`  // inline simple type
@@ -104,10 +109,11 @@ func (e xsdElement) inlineType() bool {
 }
 
 type xsdComplexType struct {
-	Name           string             `xml:"name,attr"`
-	Abstract       string             `xml:"abstract,attr"`
-	Annotation     string             `xml:"annotation>documentation"`
-	Sequence       []xsdElement       `xml:"sequence>element"`
+	Name       string `xml:"name,attr"`
+	Abstract   string `xml:"abstract,attr"`
+	Annotation string `xml:"annotation>documentation"`
+	// Sequence       []xsdElement       `xml:"sequence>element"`
+	Sequence       xsdSequence        `xml:"sequence"`
 	Attributes     []xsdAttribute     `xml:"attribute"`
 	ComplexContent *xsdComplexContent `xml:"complexContent"`
 	SimpleContent  *xsdSimpleContent  `xml:"simpleContent"`
@@ -126,7 +132,7 @@ type xsdSimpleContent struct {
 type xsdExtension struct {
 	Base       string         `xml:"base,attr"`
 	Attributes []xsdAttribute `xml:"attribute"`
-	Sequence   []xsdElement   `xml:"sequence>element"`
+	Sequence   xsdSequence  `xml:"sequence"`
 }
 
 type xsdAttribute struct {

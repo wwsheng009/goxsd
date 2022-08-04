@@ -134,7 +134,7 @@ func (b *builder) buildXML() []*xmlTree {
 // buildFromElement builds an xmlTree from an xsdElement, recursively
 // traversing the XSD type information to build up an XML element hierarchy.
 func (b *builder) buildFromElement(e xsdElement) *xmlTree {
-	xelem := &xmlTree{Name: e.Name, Type: e.Name}
+	xelem := &xmlTree{Name: e.Name, Type: e.Type}
 
 	if e.isList() {
 		xelem.List = true
@@ -168,11 +168,23 @@ func (b *builder) buildFromElement(e xsdElement) *xmlTree {
 // buildFromComplexType takes an xmlTree and an xsdComplexType, containing
 // XSD type information for xmlTree enrichment.
 func (b *builder) buildFromComplexType(xelem *xmlTree, t xsdComplexType) {
-	if t.Sequence != nil { // Does the element have children?
-		for _, e := range t.Sequence {
-			xelem.Children = append(xelem.Children, b.buildFromElement(e))
+	// if t.Sequence != nil { // Does the element have children?
+	for _, e := range t.Sequence.Elements {
+		if e.Name == "" {
+			e.Name = xelem.Name
 		}
+		if e.Ref != "" && e.Type == "" {
+			e.Type = e.Ref
+		}
+		if e.Min == "" && t.Sequence.Min != "" {
+			e.Min = t.Sequence.Min
+		}
+		if e.Max == "" && t.Sequence.Max != "" {
+			e.Max = t.Sequence.Max
+		}
+		xelem.Children = append(xelem.Children, b.buildFromElement(e))
 	}
+	// }
 
 	if t.Attributes != nil {
 		b.buildFromAttributes(xelem, t.Attributes)
@@ -232,11 +244,11 @@ func (b *builder) buildFromExtension(xelem *xmlTree, e *xsdExtension) {
 		}
 	}
 
-	if e.Sequence != nil {
-		for _, e := range e.Sequence {
-			xelem.Children = append(xelem.Children, b.buildFromElement(e))
-		}
+	// if e.Sequence != nil {
+	for _, e := range e.Sequence.Elements {
+		xelem.Children = append(xelem.Children, b.buildFromElement(e))
 	}
+	// }
 
 	if e.Attributes != nil {
 		b.buildFromAttributes(xelem, e.Attributes)

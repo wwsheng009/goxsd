@@ -35,3 +35,15 @@ to an XSD schema.
 
 * At some point, I would also like to generate validation code, that could check various rules and constraints expressed in the XSD
 
+## clone 说明
+这个项目处理逻辑比较简单，但是只能应付很简单的xml类型。
+使用template进行模板渲染
+无法处理根目录下是简单类型的template,比如以下的xml元素无法处理
+```
+<xs:element name="GBSeqid" type="xs:string"/>
+
+<xs:element name="GBSecondary-accn" type="xs:string"/>
+
+<xs:element name="GBKeyword" type="xs:string"/>
+
+```

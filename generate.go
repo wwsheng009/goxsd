@@ -99,7 +99,7 @@ func (g generator) do(out io.Writer, roots []*xmlTree) error {
 	}
 
 	for _, e := range roots {
-		if err := g.execute(e, tt, &res); err != nil {
+		if err := g.execute(e, tt, &res, 1); err != nil {
 			return err
 		}
 	}
@@ -111,6 +111,7 @@ func (g generator) do(out io.Writer, roots []*xmlTree) error {
 		TabWidth:  8,
 	})
 	if err != nil {
+		io.Copy(out, bytes.NewBuffer(res.Bytes()))
 		return err
 	}
 
@@ -121,7 +122,7 @@ func (g generator) do(out io.Writer, roots []*xmlTree) error {
 	return nil
 }
 
-func (g generator) execute(root *xmlTree, tt *template.Template, out io.Writer) error {
+func (g generator) execute(root *xmlTree, tt *template.Template, out io.Writer, idx int) error {
 	if _, ok := g.types[root.Name]; ok {
 		return nil
 	}
@@ -131,8 +132,9 @@ func (g generator) execute(root *xmlTree, tt *template.Template, out io.Writer) 
 	g.types[root.Name] = struct{}{}
 
 	for _, e := range root.Children {
-		if !primitiveType(e) {
-			if err := g.execute(e, tt, out); err != nil {
+		if !primitiveType(e) && idx != 1 {
+			idx += 1
+			if err := g.execute(e, tt, out, idx); err != nil {
 				return err
 			}
 		}
